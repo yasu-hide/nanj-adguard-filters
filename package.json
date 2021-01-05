@@ -1,0 +1,26 @@
+{
+  "name": "nanj-adguard-filters",
+  "version": "0.0.1",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "jsdom": "^16.4.0",
+    "request": "^2.88.2"
+  },
+  "engines": {
+    "node": "12.x"
+  },
+  "homepage": "https://wikiwiki.jp/nanj-adguard/",
+  "repository": {
+    "url": "https://github.com/yasu-hide/nanj-adguard-filters"
+  },
+  "license": "MIT",
+  "keywords": [
+    "node",
+    "glitch",
+    "express"
+  ]
+}
