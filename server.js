@@ -1,10 +1,22 @@
 'use strict';
+require('dotenv').config()
 const express = require("express")
 const request = require("request")
+const log4js = require("log4js")
 const {
   JSDOM
 } = require("jsdom")
+
+log4js.configure({
+    appenders: {
+	access: { type: 'console' }
+    },
+    categories: {
+	default: { appenders: [ 'access' ], level: 'info' }
+    }
+})
 const app = express()
+app.use(log4js.connectLogger(log4js.getLogger()))
 
 function requestNanjWiki(url, filter_title) {
     return new Promise((resolve, reject) => {
