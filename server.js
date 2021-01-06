@@ -6,11 +6,6 @@ const {
 } = require("jsdom")
 const app = express()
 
-function encode(str){
-    str = encodeURIComponent(str).split('%').join('');
-    return str;
-}
-
 function requestNanjWiki(url, filter_title) {
     return new Promise((resolve, reject) => {
         request(url, (e, r, body) => {
@@ -76,7 +71,6 @@ app.get("/280blocker_adblock.txt", (request, response) => {
     response.redirect(`https://280blocker.net/files/280blocker_adblock_${y}${m}.txt`)
 });
 
-const port = 3000 || process.env.PORT
-const listener = app.listen(port, () => {
+const listener = app.listen(process.env.PORT, () => {
     console.log("Your app is listening on port " + listener.address().port)
 });
