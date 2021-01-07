@@ -1,0 +1,4 @@
+CACHE_*
+node_modules
+.env
+.gitignore
