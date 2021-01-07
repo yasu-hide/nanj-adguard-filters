@@ -4,6 +4,8 @@ const express = require("express")
 const request = require("request")
 const log4js = require("log4js")
 const fs = require("fs")
+const tmp = require("tmp")
+const path = require("path")
 const {
   JSDOM
 } = require("jsdom")
@@ -19,14 +21,15 @@ log4js.configure({
 const app = express()
 app.use(log4js.connectLogger(log4js.getLogger()))
 
-function getNanjWiki(url, filterTitle) {
+function getNanjWiki(nanjWikiUrl, savePath, filterTitle) {
     return new Promise((resolve, reject) => {
-        request(url, (e, r, body) => {
-            if(e) {
-                reject(e)
-                return
-            }
-            try {
+        request(nanjWikiUrl, (e, r, body) => {
+                if(e) {
+                    return reject(e)
+                }
+                if(r.statusCode !== 200) {
+                    return reject(`unexpected response ${r.statusText}`)
+                }
                 const dom = new JSDOM(body)
                 for(const data of dom.window.document.querySelectorAll("div#content > blockquote > p.quotation")) {
                     const filterBody = data.textContent
@@ -36,12 +39,17 @@ function getNanjWiki(url, filterTitle) {
                     if(filterBody.indexOf(filterTitle) === -1) {
                         continue
                     }
-                    resolve(filterBody)
+                    const savePathTmp = path.resolve(path.dirname(savePath), path.basename(tmp.tmpNameSync()))
+                    fs.writeFileSync(savePathTmp, filterBody)
+                    fs.rename(savePathTmp, savePath, e => { return reject(e) })
+                    return resolve(filterBody)
                 }
-            } catch (e) {
-                reject(e)
-            }
         })
+    }).catch(e => {
+        console.error(e)
+        return Promise.resolve(fs.readFileSync(savePath))
+    }).catch (e => {
+        console.error(e)
     })
 }
 
@@ -70,8 +78,9 @@ const filtersNanjWiki = {
 
 for(const [ k, v ] of Object.entries(filtersNanjWiki)) {
     const routePath = "/" + k
+    const savePath = path.resolve("CACHE_" + k)
     app.get(routePath, (req, res) => {
-        getNanjWiki(v['url'], v['title']).then((filterBody) => {
+        getNanjWiki(v['url'], savePath, v['title']).then((filterBody) => {
             res.send(filterBody)
         }).catch(() => {
             res.status(400)
