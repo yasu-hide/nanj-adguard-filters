@@ -1,0 +1,7 @@
+{
+    "name": "nanj-adguard-filters",
+    "description": "なんJ Adguard部Wiki",
+    "repository": "https://github.com/yasu-hide/nanj-adguard-filters",
+    "image": "heroku/nodejs",
+    "buildpacks": [ { "url": "heroku/nodejs" } ]
+}

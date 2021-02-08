@@ -1,6 +1,8 @@
 # nanj-adguard-filters
 [なんJ AdGuard部Wiki](https://wikiwiki.jp/nanj-adguard/)に掲載されているフィルタをフェッチして、Adguardカスタムフィルタに設定できるリンク形式にするnode.jsスクリプト
 
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+
 [glitch](https://glitch.com/)にインポートすれば使えるはず。
 
 WikiのHTMLの内容やルールのTitleが変わると動かなくなる。
