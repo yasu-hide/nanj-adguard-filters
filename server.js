@@ -6,6 +6,7 @@ const log4js = require("log4js")
 const fs = require("fs")
 const tmp = require("tmp")
 const path = require("path")
+const helmet = require("helmet")
 const {
   JSDOM
 } = require("jsdom")
@@ -19,7 +20,7 @@ log4js.configure({
     }
 })
 const app = express()
-app.disable('x-powered-by')
+app.use(helmet())
 app.use(log4js.connectLogger(log4js.getLogger()))
 
 function getNanjWiki(nanjWikiUrl, savePath, filterTitle) {
