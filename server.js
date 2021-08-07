@@ -19,6 +19,7 @@ log4js.configure({
     }
 })
 const app = express()
+app.disable('x-powered-by')
 app.use(log4js.connectLogger(log4js.getLogger()))
 
 function getNanjWiki(nanjWikiUrl, savePath, filterTitle) {
