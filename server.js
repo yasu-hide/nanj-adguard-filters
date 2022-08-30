@@ -3,6 +3,7 @@ require('dotenv').config()
 const express = require("express")
 const request = require("request")
 const log4js = require("log4js")
+const errorhandler = require("errorhandler")
 const fs = require("fs")
 const tmp = require("tmp")
 const path = require("path")
@@ -13,15 +14,17 @@ const {
 
 log4js.configure({
     appenders: {
-	access: { type: 'console' }
+	    access: { type: 'console' },
     },
     categories: {
-	default: { appenders: [ 'access' ], level: 'info' }
+    	default: { appenders: [ 'access' ], level: process.env.debug ? 'debug' : 'info' },
     }
 })
+const logger = log4js.getLogger()
 const app = express()
 app.use(helmet())
-app.use(log4js.connectLogger(log4js.getLogger()))
+app.use(log4js.connectLogger(logger))
+app.use(errorhandler())
 
 function getNanjWiki(nanjWikiUrl, savePath, filterTitle) {
     return new Promise((resolve, reject) => {
@@ -42,16 +45,26 @@ function getNanjWiki(nanjWikiUrl, savePath, filterTitle) {
                         continue
                     }
                     const savePathTmp = path.resolve(path.dirname(savePath), path.basename(tmp.tmpNameSync()))
-                    fs.writeFileSync(savePathTmp, filterBody)
-                    fs.rename(savePathTmp, savePath, e => { return reject(e) })
+                    try {
+                        fs.writeFileSync(savePathTmp, filterBody)
+                        fs.rename(savePathTmp, savePath, e => { return reject(e) })
+                    }
+                    catch(e) {
+                        return reject(e)
+                    }
                     return resolve(filterBody)
                 }
         })
     }).catch(e => {
-        console.error(e)
-        return Promise.resolve(fs.readFileSync(savePath))
+        logger.error(e)
+        try {
+            return Promise.resolve(fs.readFileSync(savePath))
+        }
+        catch(e) {
+            return Promise.reject(e)
+        }
     }).catch (e => {
-        console.error(e)
+        logger.fatal(e)
     })
 }
 
@@ -83,6 +96,7 @@ for(const [ k, v ] of Object.entries(filtersNanjWiki)) {
     const savePath = path.resolve("CACHE_" + k)
     app.get(routePath, (req, res) => {
         getNanjWiki(v['url'], savePath, v['title']).then((filterBody) => {
+            logger.debug('GET ' + routePath)
             res.send(filterBody)
         }).catch(() => {
             res.status(400)
@@ -92,8 +106,15 @@ for(const [ k, v ] of Object.entries(filtersNanjWiki)) {
 
 const now = new Date(), y = now.getFullYear(), m = ('0' + (now.getMonth() + 1)).slice(-2)
 app.get("/280blocker_adblock.txt", (request, response) => {
+    logger.debug('GET /280blocker_adblock.txt')
     response.redirect(`https://280blocker.net/files/280blocker_adblock_${y}${m}.txt`)
 });
+
+app.use((req, res, next) => {
+    const error = new Error('Cannot ' + req.method + ' ' + req.path);
+    error.status = 404;
+    next(error);
+})
 
 const listener = app.listen(process.env.PORT, () => {
     console.log("Your app is listening on port " + listener.address().port)
