@@ -91,6 +91,10 @@ const filtersNanjWiki = {
     }
 }
 
+app.get("/healthz", (req, res) => {
+    res.status(200).send("");
+})
+
 for(const [ k, v ] of Object.entries(filtersNanjWiki)) {
     const routePath = "/" + k
     const savePath = path.resolve("CACHE_" + k)
